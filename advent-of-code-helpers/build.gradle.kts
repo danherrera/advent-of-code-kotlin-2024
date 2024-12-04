@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.0.20"
+    kotlin("jvm")
 }
 
 group = "dev.danherrera"
@@ -10,7 +10,6 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":advent-of-code-helpers"))
     testImplementation(kotlin("test"))
 }
 
