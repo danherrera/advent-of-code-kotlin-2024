@@ -1,5 +1,7 @@
+import org.jetbrains.kotlin.gradle.internal.config.LanguageFeature
+
 plugins {
-    kotlin("jvm") version "2.0.20"
+    kotlin("jvm") version "2.1.0"
 }
 
 group = "dev.danherrera"
@@ -12,6 +14,14 @@ repositories {
 dependencies {
     implementation(project(":advent-of-code-helpers"))
     testImplementation(kotlin("test"))
+}
+
+kotlin {
+    sourceSets.all {
+        languageSettings {
+            enableLanguageFeature(LanguageFeature.ContextReceivers.name)
+        }
+    }
 }
 
 tasks.test {
