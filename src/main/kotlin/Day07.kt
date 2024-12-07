@@ -64,12 +64,13 @@ enum class Operation {
     ADD, MULTIPLY, CONCAT
 }
 
-private fun generateCombinations(operations: LinkedHashSet<Operation>, combinationSize: Int): List<List<Operation>> {
+private fun generateCombinations(operations: LinkedHashSet<Operation>, combinationSize: Int): Sequence<List<Operation>> {
     val totalNumbers = operations.size.toDouble().pow((combinationSize).toDouble()).toInt()
 
     val maxNaryString = decimalToNary(totalNumbers, operations.size)
 
-    return (0..<totalNumbers)
+    return generateSequence(0) { it + 1 }
+        .take(totalNumbers)
         .map { decimalToNary(it, operations.size).padStart(maxNaryString.length - 1, '0') }
         .map { naryString ->
             naryString.map { digitChar ->
