@@ -1,3 +1,6 @@
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+
 fun main() = day(6) {
     part1 { input ->
         expectSample(41)
@@ -27,22 +30,25 @@ fun main() = day(6) {
         val guardLocation = findGuard(input) ?: error("Guard not found")
         input.flatMapIndexed { r, row ->
             row.mapIndexed { c, tile ->
-                if (tile == EMPTY_TILE) {
-                    val world = World(input.map { it.toMutableList() })
-                    world.value[r][c] = OBSTACLE
-                    val guardDirection = Direction.fromChar(world.value[guardLocation.row][guardLocation.column])
-                    val guardHareLocation = guardLocation + guardDirection
-                    traversePart2(guardLocation, guardDirection, world, guardHareLocation, guardDirection)
-                        .also {
-                            if (it) {
-                                println("> Adding obstacle at [$r][$c] introduces a cycle")
+                async {
+                    if (tile == EMPTY_TILE) {
+                        val world = World(input.map { it.toMutableList() })
+                        world.value[r][c] = OBSTACLE
+                        val guardDirection = Direction.fromChar(world.value[guardLocation.row][guardLocation.column])
+                        val guardHareLocation = guardLocation + guardDirection
+                        traversePart2(guardLocation, guardDirection, world, guardHareLocation, guardDirection)
+                            .also {
+                                if (it) {
+                                    println("> Adding obstacle at [$r][$c] introduces a cycle")
+                                }
                             }
-                        }
-                } else {
-                    false
+                    } else {
+                        false
+                    }
                 }
             }
         }
+            .awaitAll()
             .count { it }
             .toLong()
     }
@@ -144,7 +150,10 @@ private fun World.moveStep(location: Coordinate, direction: Direction): Pair<Coo
 
     var nextDirection = direction
     while (
-        value[clamp((location + nextDirection).row, 0..<getHeight())][clamp((location + nextDirection).column, 0..<getWidth())] == OBSTACLE
+        value[clamp((location + nextDirection).row, 0..<getHeight())][clamp(
+            (location + nextDirection).column,
+            0..<getWidth()
+        )] == OBSTACLE
     ) {
         // rotate guard
         nextDirection = when (nextDirection) {
