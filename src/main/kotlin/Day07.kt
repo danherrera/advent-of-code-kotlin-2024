@@ -100,10 +100,13 @@ private fun evaluateLeftToRight(operators: List<Long>, operations: List<Operatio
     val mutableOperations = operations.toMutableList()
 
     while (mutableOperations.isNotEmpty()) {
-        mutableOperators[0] = when (mutableOperations[0]) {
-            Operation.ADD -> mutableOperators[0] + mutableOperators[1]
-            Operation.MULTIPLY -> mutableOperators[0] * mutableOperators[1]
-            Operation.CONCAT -> "${mutableOperators[0]}${mutableOperators[1]}".toLong()
+        val operation = mutableOperations[0]
+        val n1 = mutableOperators[0]
+        val n2 = mutableOperators[1]
+        mutableOperators[0] = when (operation) {
+            Operation.ADD -> n1 + n2
+            Operation.MULTIPLY -> n1 * n2
+            Operation.CONCAT -> "$n1$n2".toLong()
         }
         mutableOperations.removeAt(0)
         mutableOperators.removeAt(1)
