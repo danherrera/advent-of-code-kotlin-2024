@@ -12,18 +12,13 @@ fun main() = day(7) {
             Operation.MULTIPLY,
         )
 
-        equations.mapNotNull { equation ->
-            generateCombinations(allowedOperations, equation.operators.size - 1)
-                .map { equation to it }
-                .takeIf { list ->
-                    list.any { (equation, ops) ->
+        equations.filter { equation ->
+                generateCombinations(allowedOperations, equation.operators.size - 1)
+                    .any { ops ->
                         evaluateLeftToRight(equation.operators, ops) == equation.testValue
                     }
-                }
         }
-            .sumOf {
-                it.first().first.testValue
-            }
+            .sumOf { equation -> equation.testValue }
     }
 
     part2 { input ->
@@ -38,18 +33,13 @@ fun main() = day(7) {
             Operation.CONCAT,
         )
 
-        equations.mapNotNull { equation ->
+        equations.filter { equation ->
             generateCombinations(allowedOperations, equation.operators.size - 1)
-                .map { equation to it }
-                .takeIf { list ->
-                    list.any { (equation, ops) ->
-                        evaluateLeftToRight(equation.operators, ops) == equation.testValue
-                    }
+                .any { ops ->
+                    evaluateLeftToRight(equation.operators, ops) == equation.testValue
                 }
         }
-            .sumOf {
-                it.first().first.testValue
-            }
+            .sumOf { equation -> equation.testValue }
     }
 }
 
