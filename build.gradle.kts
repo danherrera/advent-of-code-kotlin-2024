@@ -27,3 +27,11 @@ kotlin {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.register<JavaExec>("run") {
+    dependsOn("build")
+    val dayArg = project.findProperty("day")?.toString()?.padStart(2, '0')
+        ?: error("Please provide which day to run. Example: ./gradlew run -Pday=1")
+    mainClass.set("Day${dayArg}Kt")
+    classpath = sourceSets["main"].runtimeClasspath
+}
