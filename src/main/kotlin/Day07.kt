@@ -1,3 +1,5 @@
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlin.math.pow
 
 fun main() = day(7) {
@@ -12,13 +14,17 @@ fun main() = day(7) {
             Operation.MULTIPLY,
         )
 
-        equations.filter { equation ->
-                generateCombinations(allowedOperations, equation.operators.size - 1)
+        equations.map { equation ->
+            async {
+                equation.testValue to generateCombinations(allowedOperations, equation.operators.size - 1)
                     .any { ops ->
                         evaluateLeftToRight(equation.operators, ops) == equation.testValue
                     }
+            }
         }
-            .sumOf { equation -> equation.testValue }
+            .awaitAll()
+            .filter { (_, isEquationValid) -> isEquationValid }
+            .sumOf { (testValue, _) -> testValue }
     }
 
     part2 { input ->
@@ -33,13 +39,17 @@ fun main() = day(7) {
             Operation.CONCAT,
         )
 
-        equations.filter { equation ->
-            generateCombinations(allowedOperations, equation.operators.size - 1)
-                .any { ops ->
-                    evaluateLeftToRight(equation.operators, ops) == equation.testValue
-                }
+        equations.map { equation ->
+            async {
+                equation.testValue to generateCombinations(allowedOperations, equation.operators.size - 1)
+                    .any { ops ->
+                        evaluateLeftToRight(equation.operators, ops) == equation.testValue
+                    }
+            }
         }
-            .sumOf { equation -> equation.testValue }
+            .awaitAll()
+            .filter { (_, isEquationValid) -> isEquationValid }
+            .sumOf { (testValue, _) -> testValue }
     }
 }
 
@@ -54,7 +64,10 @@ enum class Operation {
     ADD, MULTIPLY, CONCAT
 }
 
-private fun generateCombinations(operations: LinkedHashSet<Operation>, combinationSize: Int): Sequence<List<Operation>> {
+private fun generateCombinations(
+    operations: LinkedHashSet<Operation>,
+    combinationSize: Int
+): Sequence<List<Operation>> {
     val totalNumbers = operations.size.toDouble().pow((combinationSize).toDouble()).toInt()
 
     val maxNaryString = decimalToNary(totalNumbers, operations.size)
