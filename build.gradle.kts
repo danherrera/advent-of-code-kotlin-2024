@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
     implementation(project(":advent-of-code-helpers"))
+    implementation(libs.kotlinx.coroutines.core.jvm)
     testImplementation(kotlin("test"))
 }
 
