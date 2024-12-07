@@ -69,6 +69,7 @@ private fun generateCombinations(operations: LinkedHashSet<Operation>, combinati
         }
 }
 
+// PRO TIP: This can be achieved with `decimal.toString(radix = n)`
 private fun decimalToNary(decimal: Int, n: Int): String {
     val integers = mutableListOf<Int>()
     var decimalNumber = decimal
