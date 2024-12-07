@@ -38,9 +38,9 @@ fun day(day: Int, f: DayContext.() -> Unit) {
     val dayString = day.toString().padStart(2, '0')
     println(
         """
-        =========================
-                 Day $dayString
-        =========================
+        ================================
+                     Day $dayString
+        ================================
     """.trimIndent()
     )
 
@@ -57,7 +57,7 @@ fun day(day: Int, f: DayContext.() -> Unit) {
             check(answer == dayContext.part1Context.expectedSampleAnswer) {
                 "Sample answer of '$answer' does not match expected result of '${dayContext.part1Context.expectedSampleAnswer}'"
             }
-            println("Sample answer is correct!")
+            println("Part 1 sample answer is correct!")
         }
 
     if (sample1Result.isFailure) {
@@ -88,7 +88,7 @@ fun day(day: Int, f: DayContext.() -> Unit) {
             check(answer == dayContext.part2Context.expectedSampleAnswer) {
                 "Sample answer of '$answer' does not match expected result of '${dayContext.part2Context.expectedSampleAnswer}'"
             }
-            println("Sample answer is correct!")
+            println("Part 2 sample answer is correct!")
         }
 
     if (sample2Result.isFailure) {
