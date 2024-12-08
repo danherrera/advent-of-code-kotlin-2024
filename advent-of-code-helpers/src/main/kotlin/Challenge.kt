@@ -21,7 +21,7 @@ class DayContext {
     internal var part1Context: PartContext = PartContext()
     internal var part2Context: PartContext = PartContext()
 
-    fun part1(f: suspend PartContext.(List<String>) -> Long) = runBlocking {
+    fun part1(f: suspend PartContext.(List<String>) -> Long) {
         part1Context.part = f
     }
 
