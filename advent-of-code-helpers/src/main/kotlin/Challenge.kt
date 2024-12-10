@@ -10,6 +10,9 @@ class PartContext : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     internal var expectedSampleAnswer: Long = 0L
         private set
 
+    internal var isSampleRun = false
+    val isSample get() = isSampleRun
+
     internal lateinit var part: suspend PartContext.(List<String>) -> Long
 
     fun expectSample(answer: Long) {
@@ -29,11 +32,13 @@ class DayContext {
         part2Context.part = f
     }
 
-    internal suspend fun evaluatePart1(input: List<String>): Long = with(part1Context) {
+    internal suspend fun evaluatePart1(input: List<String>, isSampleRun: Boolean = false): Long = with(part1Context) {
+        part1Context.isSampleRun = isSampleRun
         part1Context.part(input)
     }
 
-    internal suspend fun evaluatePart2(input: List<String>): Long = with(part2Context) {
+    internal suspend fun evaluatePart2(input: List<String>, isSampleRun: Boolean = false): Long = with(part2Context) {
+        part2Context.isSampleRun = isSampleRun
         part2Context.part(input)
     }
 }
@@ -56,7 +61,7 @@ fun day(day: Int, f: suspend DayContext.() -> Unit) = runBlocking {
 
     val sampleFileName = "Day${dayString}_sample.txt"
     val sample1Result = classLoader.readFileContentAsListOfStrings(sampleFileName)
-        .map { dayContext.evaluatePart1(it) }
+        .map { dayContext.evaluatePart1(it, isSampleRun = true) }
         .onSuccess { answer ->
             check(answer == dayContext.part1Context.expectedSampleAnswer) {
                 "Sample answer of '$answer' does not match expected result of '${dayContext.part1Context.expectedSampleAnswer}'"
@@ -93,7 +98,7 @@ fun day(day: Int, f: suspend DayContext.() -> Unit) = runBlocking {
             onSuccess = { Result.success(it) },
             onFailure = { Result.success(classLoader.readFileContentAsListOfStrings(sampleFileName).getOrThrow()) }
         )
-        .map { dayContext.evaluatePart2(it) }
+        .map { dayContext.evaluatePart2(it, isSampleRun = true) }
         .onSuccess { answer ->
             check(answer == dayContext.part2Context.expectedSampleAnswer) {
                 "Sample answer of '$answer' does not match expected result of '${dayContext.part2Context.expectedSampleAnswer}'"
