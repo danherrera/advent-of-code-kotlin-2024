@@ -59,42 +59,50 @@ fun main() = day(9) {
                     else -> DiskSection.Space(count)
                 }
             }
+            .filterNot { (it as? DiskSection.Space)?.length?.let { it == 0 } == true }
             .toMutableList()
 
-        var leftIndex = 0
-        while (leftIndex < uncompactedBlocks.size) {
-            while ((leftIndex < uncompactedBlocks.size - 1) && uncompactedBlocks[leftIndex] !is DiskSection.Space) {
-                leftIndex++
+        var i = 0
+        while (i < uncompactedBlocks.size) {
+            val numberIndex = uncompactedBlocks.dropLast(i)
+                .indexOfLast { (it as? DiskSection.Number)?.moved?.let { it == false } == true }
+
+            val number = uncompactedBlocks[numberIndex] as DiskSection.Number
+
+            val firstEligibleSpaceIndex =
+                uncompactedBlocks.indexOfFirst { (it as? DiskSection.Space)?.let(number::fitsIn) == true }
+            if (firstEligibleSpaceIndex == -1) {
+                // no available space to place number
+                i++
+                continue
             }
-            val space = uncompactedBlocks[leftIndex] as? DiskSection.Space
-            if (space == null) {
-                // no more spaces to fill
-                break
+            val firstEligibleSpace = uncompactedBlocks[firstEligibleSpaceIndex] as DiskSection.Space
+
+            if (firstEligibleSpaceIndex > numberIndex) {
+                // space available is after this number's location
+                i++
+                continue
             }
 
-            var rightIndex = uncompactedBlocks.size - 1
-            while (uncompactedBlocks[rightIndex] !is DiskSection.Number ||
-                (!(uncompactedBlocks[rightIndex] as DiskSection.Number).fitsIn(space) &&
-                        rightIndex > leftIndex)
-            ) {
-                rightIndex--
+            val spaceReplacement = firstEligibleSpace.addNumber(number)
+            uncompactedBlocks.removeAt(firstEligibleSpaceIndex)
+            uncompactedBlocks.addAll(firstEligibleSpaceIndex, spaceReplacement)
+
+            val nIndex = if (spaceReplacement.size == 2) {
+                numberIndex + 1
+            } else {
+                numberIndex
             }
 
-            if (rightIndex > leftIndex) {
-                val number = uncompactedBlocks[rightIndex] as DiskSection.Number
-                uncompactedBlocks.removeAt(rightIndex)
-                uncompactedBlocks.add(rightIndex, number.asSpace())
-                uncompactedBlocks.removeAt(leftIndex)
-                uncompactedBlocks.addAll(leftIndex, space.addNumber(number))
-            }
+            uncompactedBlocks.removeAt(nIndex)
+            uncompactedBlocks.add(nIndex, number.asSpace())
 
-            leftIndex++
+            i++
         }
 
         uncompactedBlocks
             .map { it.asString() }
             .joinToString("")
-//            .also { println(it) }
             .mapIndexed { i, char ->
                 when (char) {
                     SPACE -> BigInteger.ZERO
@@ -116,14 +124,16 @@ private sealed interface DiskSection {
 
     data class Space(override val length: Int) : DiskSection {
         fun addNumber(number: DiskSection.Number): List<DiskSection> {
-            check (number.length <= length) { "Number doesn't fit space" }
-            if (number.length == length) return listOf(number)
-            return listOf(number, Space(length - number.length))
+            check(number.length <= length) { "Number doesn't fit space" }
+            val movedNumber = number.copy(moved = true)
+            if (number.length == length) return listOf(movedNumber)
+            return listOf(movedNumber, Space(length - number.length))
         }
 
         override fun asString(): String = generateSequence { SPACE }.take(length).joinToString("")
     }
-    data class Number(val id: Int, val count: Int) : DiskSection {
+
+    data class Number(val id: Int, val count: Int, val moved: Boolean = false) : DiskSection {
         override val length: Int = asString().length
         override fun asString(): String = generateSequence { id.toString() }.take(count).joinToString("")
         fun fitsIn(space: DiskSection.Space): Boolean = length <= space.length
