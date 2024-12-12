@@ -9,6 +9,7 @@ import kotlin.time.measureTime
 class PartContext : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     internal var expectedSampleAnswer: Long = 0L
         private set
+    internal var skipSampleAnswerCheck: Boolean = true
 
     internal var isSampleRun = false
     val isSample get() = isSampleRun
@@ -16,6 +17,7 @@ class PartContext : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     internal lateinit var part: suspend PartContext.(List<String>) -> Long
 
     fun expectSample(answer: Long) {
+        skipSampleAnswerCheck = false
         expectedSampleAnswer = answer
     }
 }
@@ -63,6 +65,10 @@ fun day(day: Int, f: suspend DayContext.() -> Unit) = runBlocking {
     val sample1Result = classLoader.readFileContentAsListOfStrings(sampleFileName)
         .map { dayContext.evaluatePart1(it, isSampleRun = true) }
         .onSuccess { answer ->
+            if (dayContext.part1Context.skipSampleAnswerCheck) {
+                println("Part 1 sample answer is $answer (unchecked)")
+                return@onSuccess
+            }
             check(answer == dayContext.part1Context.expectedSampleAnswer) {
                 "Sample answer of '$answer' does not match expected result of '${dayContext.part1Context.expectedSampleAnswer}'"
             }
@@ -101,6 +107,10 @@ fun day(day: Int, f: suspend DayContext.() -> Unit) = runBlocking {
         .map { dayContext.evaluatePart2(it, isSampleRun = true) }
         .onSuccess { answer ->
             check(answer == dayContext.part2Context.expectedSampleAnswer) {
+                if (dayContext.part2Context.skipSampleAnswerCheck) {
+                    println("Part 2 sample answer is $answer (unchecked)")
+                    return@onSuccess
+                }
                 "Sample answer of '$answer' does not match expected result of '${dayContext.part2Context.expectedSampleAnswer}'"
             }
             println("Part 2 sample answer is correct!")
