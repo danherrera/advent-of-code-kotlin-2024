@@ -24,13 +24,13 @@ fun clamp(value: Int, range: IntRange): Int =
 
 val all2DDirections = listOf(
     -1 to -1,
-    0 to -1,
-    1 to -1,
     -1 to 0,
-    1 to 0,
     -1 to 1,
     0 to 1,
     1 to 1,
+    1 to 0,
+    1 to -1,
+    0 to -1,
 )
 
 val diagonal2DDirections = all2DDirections
