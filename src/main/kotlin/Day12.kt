@@ -98,6 +98,32 @@ private fun calculatePlotPerimeter(input: List<String>, coordinate: PlotCoordina
         .filter { (r, c) -> input[r][c] == value }
     return 4 - adjacentRegionPlots.size
 }
+private fun printMap(
+    input: List<String>,
+    coordinate: PlotCoordinate,
+    facing: Facing,
+    char: Char? = null,
+) {
+    val value = input[coordinate.r][coordinate.c]
+    if (char == null || value == char) {
+        println("$facing -----------------------")
+        println(
+            input.mapIndexed { r, row ->
+                row.mapIndexed { c, char ->
+                    when {
+                        r == coordinate.r && c == coordinate.c -> when (facing) {
+                            Facing.NORTH -> '^'
+                            Facing.EAST -> '>'
+                            Facing.SOUTH -> 'v'
+                            Facing.WEST -> '<'
+                        }
+                        else -> if (char == value) char else '.'
+                    }
+                }.joinToString("")
+            }.joinToString("\n")
+        )
+    }
+}
 
 private tailrec fun calculateSides(
     input: List<String>,
@@ -105,11 +131,11 @@ private tailrec fun calculateSides(
     sides: Int = 0,
     facing: Facing = Facing.EAST,
     originalCoordinate: PlotCoordinate = coordinate,
-    iteration: Int = 0,
+    firstPlot: Boolean = true,
 ): Int {
-    if (iteration > 1 && coordinate == originalCoordinate) return sides.coerceIn(4..Int.MAX_VALUE)
-    // do not count changing direction from first plot
-    val sidesDelta = if (coordinate == originalCoordinate && iteration == 1) -1 else 0
+
+    if (!firstPlot && coordinate == originalCoordinate) return sides.coerceAtLeast(4)
+
 
     val left = facing.getLeft()
     val right = facing.getLeft().getLeft().getLeft()
@@ -119,20 +145,28 @@ private tailrec fun calculateSides(
     while (nextCoordinate.canMove(input, facing)) {
         nextCoordinate = nextCoordinate.move(facing)
 
+        if (!firstPlot && coordinate == originalCoordinate) return sides.coerceAtLeast(4)
+
         if (nextCoordinate.canMove(input, left)) {
-            return calculateSides(input, nextCoordinate, sides + 1 + sidesDelta, left, originalCoordinate, iteration + 1)
+            return calculateSides(input, nextCoordinate, sides + 1, left, originalCoordinate, false)
         }
     }
 
+    if (nextCoordinate.canMove(input, left)) {
+        return calculateSides(input, nextCoordinate, sides + 1, left, originalCoordinate, false)
+    }
+
     if (nextCoordinate.canMove(input, right)) {
-        return calculateSides(input, nextCoordinate, sides + 1 + sidesDelta, right, originalCoordinate, iteration + 1)
+        val isFirstPlot = firstPlot && coordinate == originalCoordinate
+        return calculateSides(input, nextCoordinate, sides + 1, right, originalCoordinate, isFirstPlot)
     }
 
     if (nextCoordinate.canMove(input, back)) {
-        return calculateSides(input, nextCoordinate, sides + 2 + sidesDelta, back, originalCoordinate, iteration + 1)
+        val sidesDelta = if (nextCoordinate == originalCoordinate && facing != Facing.WEST) 1 else 2
+        return calculateSides(input, nextCoordinate, sides + sidesDelta, back, originalCoordinate, false)
     }
 
-    return sides.coerceIn(4..Int.MAX_VALUE)
+    return calculateSides(input, nextCoordinate, sides, back, originalCoordinate, false)
 }
 
 private enum class Facing(val dR: Int, val dC: Int) {
